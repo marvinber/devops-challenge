@@ -1,0 +1,46 @@
+---
+
+
+- name: Download latest arkade
+  get_url:
+    url: https://github.com/alexellis/arkade/releases/download/{{ arkade_version }}/arkade 
+    #checksum: sha256:https://github.com/alexellis/arkade/releases/download/{{ arkade_version }}/arkade.sha256
+    dest: /usr/local/bin/arkade
+    owner: root
+    group: root
+    mode: 0755
+
+- name: Download latest faas cli
+  get_url:
+    url: https://github.com/openfaas/faas-cli/releases/download/{{ faas_cli_version }}/faas-cli
+    checksum: sha256:https://github.com/openfaas/faas-cli/releases/download/{{ faas_cli_version }}/faas-cli.sha256
+    dest: /usr/local/bin/faas-cli
+    owner: root
+    group: root
+    mode: 0755
+
+- name: Check if openfaas install command ran
+  stat:
+    path: /home/{{ user }}/openfaas_installed
+  register: stat_result
+
+- name: Install openfaas via arkade
+  #become_user: "{{ user }}"
+  ansible.builtin.shell: |
+    kubectl config view --raw > ~/.kube/config
+    chmod go-r ~/.kube/config
+    arkade install openfaas && touch /home/{{ user }}/openfaas_installed
+  when: not stat_result.stat.exists
+  
+- name: Get initial password
+  become: no
+  ansible.builtin.shell: |
+    PASSWORD=$(kubectl get secret -n openfaas basic-auth -o jsonpath="{.data.basic-auth-password}" | base64 --decode; echo)
+    echo $PASSWORD
+  args:
+    executable: /bin/bash
+  register: echo
+  when: stat_result.stat.exists
+
+-  debug: var=echo.stdout_lines
+

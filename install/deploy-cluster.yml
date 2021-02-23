@@ -1,0 +1,20 @@
+---
+
+- hosts: all
+  gather_facts: yes
+  become: yes
+  roles:
+    - common
+
+- hosts: master
+  gather_facts: yes
+  become: yes
+  roles:
+    - k3_master
+
+- hosts: worker
+  gather_facts: yes
+  become: yes
+  roles:
+    - k3_worker
+

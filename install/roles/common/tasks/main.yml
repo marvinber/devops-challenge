@@ -1,0 +1,33 @@
+---
+
+- name: Add unprivileged user 
+  ansible.builtin.user:
+    name: "{{ user }}"
+    shell: /bin/bash
+    state: present
+    create_home: yes
+
+- name: Add user to sudo
+  lineinfile:
+    path: /etc/sudoers.d/"{{ user }}"
+    line: '"{{ user }}" ALL=(ALL) NOPASSWD: ALL'
+    state: present
+    mode: 0440
+    create: yes
+    validate: 'visudo -cf %s'
+
+- name: Key setup
+  authorized_key:
+    user: "{{ user }}"
+    key: "{{ item }}" 
+  with_file:
+      - /home/{{ user }}/.ssh/id_ed25519.pub
+
+- name: Download k3
+  get_url:
+    url: https://github.com/k3s-io/k3s/releases/download/{{ k3s_version }}/k3s
+    checksum: sha256:https://github.com/k3s-io/k3s/releases/download/{{ k3s_version }}/sha256sum-amd64.txt
+    dest: /usr/local/bin/k3s
+    owner: root
+    group: root
+    mode: 0755
