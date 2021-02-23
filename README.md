@@ -17,5 +17,5 @@ Enthält Scripts und sonstige Konfigurationen für die Challenge.
 
 ## Deployment
 
-Deployment und die Konfiguration findet mit Ansible statt, dafür wurden die K3s
+Deployment und die Konfiguration findet mit Ansible statt, dafür wurden die von K3s
 bereitgestellten Rollen und Playbooks verwendet und leichte Anpassungen durchgeführt.
